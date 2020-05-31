@@ -1,13 +1,14 @@
-/* °üº¬Í·ÎÄ¼ş ----------------------------------------------------------------*/
+/* åŒ…å«å¤´æ–‡ä»¶ ----------------------------------------------------------------*/
 #include "ESP8266.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include "main.h"
-/* Ë½ÓĞÀàĞÍ¶¨Òå --------------------------------------------------------------*/
-/* Ë½ÓĞºê¶¨Òå ----------------------------------------------------------------*/
-/* Ë½ÓĞ±äÁ¿ ------------------------------------------------------------------*/
+#include "GUI.h"
+/* ç§æœ‰ç±»å‹å®šä¹‰ --------------------------------------------------------------*/
+/* ç§æœ‰å®å®šä¹‰ ----------------------------------------------------------------*/
+/* ç§æœ‰å˜é‡ ------------------------------------------------------------------*/
 //UART_HandleTypeDef husartx_esp8266;
 extern UART_HandleTypeDef huart2;
 #define husartx_esp8266 huart2
@@ -15,21 +16,21 @@ extern UART_HandleTypeDef huart2;
 STRUCT_USARTx_Fram strEsp8266_Fram_Record = { 0 };
 uint8_t esp8266_rxdata;
 
-char Esp8266IPAddress[30] = "192.168.4.1";  // Ä£¿éIPµØÖ·
-char Esp8266SSID[30] = "ESP8266_yyc";      // Ä£¿éSSID
-char Esp8266PWD[30] = "12345678";           //Ä£¿éÈÈµãµÄÃÜÔ¿
+char Esp8266IPAddress[30] = "192.168.4.1";  // æ¨¡å—IPåœ°å€
+char Esp8266SSID[30] = "ESP8266_yyc";      // æ¨¡å—SSID
+char Esp8266PWD[30] = "12345678";           //æ¨¡å—çƒ­ç‚¹çš„å¯†é’¥
 
-char User_ESP8266_ApSsid[30] = "111";      //ÒªÁ¬½ÓµÄÈÈµãµÄÃû³Æ
-char User_ESP8266_ApPwd[30] = "dalao666";   //ÒªÁ¬½ÓµÄÈÈµãµÄÃÜÔ¿
-extern char User_ESP8266_TcpServer_IP[4] ; //ÒªÁ¬½ÓµÄ·şÎñÆ÷µÄ IP
-extern char User_ESP8266_TcpServer_Port[10];      //ÒªÁ¬½ÓµÄ·şÎñÆ÷µÄ¶Ë¿Ú
+char User_ESP8266_ApSsid[30] = "111";      //è¦è¿æ¥çš„çƒ­ç‚¹çš„åç§°
+char User_ESP8266_ApPwd[30] = "dalao666";   //è¦è¿æ¥çš„çƒ­ç‚¹çš„å¯†é’¥
+extern char User_ESP8266_TcpServer_IP[4] ; //è¦è¿æ¥çš„æœåŠ¡å™¨çš„ IP
+extern char User_ESP8266_TcpServer_Port[10];      //è¦è¿æ¥çš„æœåŠ¡å™¨çš„ç«¯å£
 
 
 /**
-  * º¯Êı¹¦ÄÜ: ÖØÆôESP8266Ä£¿é
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: ÎŞ
-  * Ëµ    Ã÷£º±»ESP8266_AT_Testµ÷ÓÃ
+  * å‡½æ•°åŠŸèƒ½: é‡å¯ESP8266æ¨¡å—
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: æ— 
+  * è¯´    æ˜ï¼šè¢«ESP8266_AT_Testè°ƒç”¨
   */
 void ESP8266_Rst ( void )
 {
@@ -43,24 +44,24 @@ void ESP8266_Rst ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ¶ÔESP8266Ä£¿é·¢ËÍATÖ¸Áî
-  * ÊäÈë²ÎÊı: cmd£¬´ı·¢ËÍµÄÖ¸Áî
-  *           reply1£¬reply2£¬ÆÚ´ıµÄÏìÓ¦£¬ÎªNULL±í²»ĞèÏìÓ¦£¬Á½ÕßÎª»òÂß¼­¹ØÏµ
-  *           waittime£¬µÈ´ıÏìÓ¦µÄÊ±¼ä
-  * ·µ »Ø Öµ: 1£¬Ö¸Áî·¢ËÍ³É¹¦
-  *           0£¬Ö¸Áî·¢ËÍÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: å¯¹ESP8266æ¨¡å—å‘é€ATæŒ‡ä»¤
+  * è¾“å…¥å‚æ•°: cmdï¼Œå¾…å‘é€çš„æŒ‡ä»¤
+  *           reply1ï¼Œreply2ï¼ŒæœŸå¾…çš„å“åº”ï¼Œä¸ºNULLè¡¨ä¸éœ€å“åº”ï¼Œä¸¤è€…ä¸ºæˆ–é€»è¾‘å…³ç³»
+  *           waittimeï¼Œç­‰å¾…å“åº”çš„æ—¶é—´
+  * è¿” å› å€¼: 1ï¼ŒæŒ‡ä»¤å‘é€æˆåŠŸ
+  *           0ï¼ŒæŒ‡ä»¤å‘é€å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_Cmd ( char * cmd, char * reply1, char * reply2, uint32_t waittime )
 {
-	strEsp8266_Fram_Record .FramLength = 0;               //´ÓĞÂ¿ªÊ¼½ÓÊÕĞÂµÄÊı¾İ°ü
+	strEsp8266_Fram_Record .FramLength = 0;               //ä»æ–°å¼€å§‹æ¥æ”¶æ–°çš„æ•°æ®åŒ…
 	char str[80];
 	sprintf ( str,"%s\r\n", cmd );
 	HAL_UART_Transmit_DMA(&huart2,(uint8_t *)str,strlen(str));
-	if ( ( reply1 == 0 ) && ( reply2 == 0 ) )                      //²»ĞèÒª½ÓÊÕÊı¾İ
+	if ( ( reply1 == 0 ) && ( reply2 == 0 ) )                      //ä¸éœ€è¦æ¥æ”¶æ•°æ®
 		return true;
 	
-	HAL_Delay( waittime );                 //ÑÓÊ±
+	HAL_Delay( waittime );                 //å»¶æ—¶
 	
 	strEsp8266_Fram_Record .Data_RX_BUF [ strEsp8266_Fram_Record .FramLength ]  = '\0';
 
@@ -79,11 +80,11 @@ bool ESP8266_Cmd ( char * cmd, char * reply1, char * reply2, uint32_t waittime )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ¶ÔESP8266Ä£¿é½øĞĞAT²âÊÔÆô¶¯
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: 1£¬Ñ¡Ôñ³É¹¦
-  *           0£¬Ñ¡ÔñÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: å¯¹ESP8266æ¨¡å—è¿›è¡ŒATæµ‹è¯•å¯åŠ¨
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: 1ï¼Œé€‰æ‹©æˆåŠŸ
+  *           0ï¼Œé€‰æ‹©å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_AT_Test ( void )
 {
@@ -102,11 +103,11 @@ bool ESP8266_AT_Test ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: Ñ¡ÔñESP8266Ä£¿éµÄ¹¤×÷Ä£Ê½
-  * ÊäÈë²ÎÊı: enumMode£¬¹¤×÷Ä£Ê½
-  * ·µ »Ø Öµ: 1£¬Ñ¡Ôñ³É¹¦
-  *           0£¬Ñ¡ÔñÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: é€‰æ‹©ESP8266æ¨¡å—çš„å·¥ä½œæ¨¡å¼
+  * è¾“å…¥å‚æ•°: enumModeï¼Œå·¥ä½œæ¨¡å¼
+  * è¿” å› å€¼: 1ï¼Œé€‰æ‹©æˆåŠŸ
+  *           0ï¼Œé€‰æ‹©å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_Net_Mode_Choose ( ENUM_Net_ModeTypeDef enumMode )
 {
@@ -136,12 +137,12 @@ bool ESP8266_Net_Mode_Choose ( ENUM_Net_ModeTypeDef enumMode )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿éÁ¬½ÓÍâ²¿WiFi
-  * ÊäÈë²ÎÊı: pSSID£¬WiFiÃû³Æ×Ö·û´®
-  *           pPassWord£¬WiFiÃÜÂë×Ö·û´®
-  * ·µ »Ø Öµ: 1£¬Á¬½Ó³É¹¦
-  *           0£¬Á¬½ÓÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—è¿æ¥å¤–éƒ¨WiFi
+  * è¾“å…¥å‚æ•°: pSSIDï¼ŒWiFiåç§°å­—ç¬¦ä¸²
+  *           pPassWordï¼ŒWiFiå¯†ç å­—ç¬¦ä¸²
+  * è¿” å› å€¼: 1ï¼Œè¿æ¥æˆåŠŸ
+  *           0ï¼Œè¿æ¥å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_JoinAP ( char * pSSID, char * pPassWord )
 {
@@ -157,13 +158,13 @@ bool ESP8266_JoinAP ( char * pSSID, char * pPassWord )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿é´´½¨WiFiÈÈµã
-  * ÊäÈë²ÎÊı: pSSID£¬WiFiÃû³Æ×Ö·û´®
-  *           pPassWord£¬WiFiÃÜÂë×Ö·û´®
-  *           enunPsdMode£¬WiFi¼ÓÃÜ·½Ê½´úºÅ×Ö·û´®
-  * ·µ »Ø Öµ: 1£¬´´½¨³É¹¦
-  *           0£¬´´½¨Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—åˆ›å»ºWiFiçƒ­ç‚¹
+  * è¾“å…¥å‚æ•°: pSSIDï¼ŒWiFiåç§°å­—ç¬¦ä¸²
+  *           pPassWordï¼ŒWiFiå¯†ç å­—ç¬¦ä¸²
+  *           enunPsdModeï¼ŒWiFiåŠ å¯†æ–¹å¼ä»£å·å­—ç¬¦ä¸²
+  * è¿” å› å€¼: 1ï¼Œåˆ›å»ºæˆåŠŸ
+  *           0ï¼Œåˆ›å»ºå¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_BuildAP ( char * pSSID, char * pPassWord, ENUM_AP_PsdMode_TypeDef enunPsdMode )
 {
@@ -179,11 +180,11 @@ bool ESP8266_BuildAP ( char * pSSID, char * pPassWord, ENUM_AP_PsdMode_TypeDef e
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿éÆô¶¯¶àÁ¬½Ó
-  * ÊäÈë²ÎÊı: enumEnUnvarnishTx£¬ÅäÖÃÊÇ·ñ¶àÁ¬½Ó
-  * ·µ »Ø Öµ: 1£¬ÅäÖÃ³É¹¦
-  *           0£¬ÅäÖÃÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—å¯åŠ¨å¤šè¿æ¥
+  * è¾“å…¥å‚æ•°: enumEnUnvarnishTxï¼Œé…ç½®æ˜¯å¦å¤šè¿æ¥
+  * è¿” å› å€¼: 1ï¼Œé…ç½®æˆåŠŸ
+  *           0ï¼Œé…ç½®å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_Enable_MultipleId ( FunctionalState enumEnUnvarnishTx )
 {
@@ -199,14 +200,14 @@ bool ESP8266_Enable_MultipleId ( FunctionalState enumEnUnvarnishTx )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿éÁ¬½ÓÍâ²¿·şÎñÆ÷
-  * ÊäÈë²ÎÊı: enumE£¬ÍøÂçĞ­Òé
-  *           ip£¬·şÎñÆ÷IP×Ö·û´®
-  *           ComNum£¬·şÎñÆ÷¶Ë¿Ú×Ö·û´®
-  *           id£¬Ä£¿éÁ¬½Ó·şÎñÆ÷µÄID
-  * ·µ »Ø Öµ: 1£¬Á¬½Ó³É¹¦
-  *           0£¬Á¬½ÓÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—è¿æ¥å¤–éƒ¨æœåŠ¡å™¨
+  * è¾“å…¥å‚æ•°: enumEï¼Œç½‘ç»œåè®®
+  *           ipï¼ŒæœåŠ¡å™¨IPå­—ç¬¦ä¸²
+  *           ComNumï¼ŒæœåŠ¡å™¨ç«¯å£å­—ç¬¦ä¸²
+  *           idï¼Œæ¨¡å—è¿æ¥æœåŠ¡å™¨çš„ID
+  * è¿” å› å€¼: 1ï¼Œè¿æ¥æˆåŠŸ
+  *           0ï¼Œè¿æ¥å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_Link_Server ( ENUM_NetPro_TypeDef enumE, char * ip, char * ComNum, ENUM_ID_NO_TypeDef id)
 {
@@ -237,13 +238,13 @@ bool ESP8266_Link_Server ( ENUM_NetPro_TypeDef enumE, char * ip, char * ComNum, 
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿é¿ªÆô»ò¹Ø±Õ·şÎñÆ÷Ä£Ê½
-  * ÊäÈë²ÎÊı: enumMode£¬¿ªÆô/¹Ø±Õ
-  *           pPortNum£¬·şÎñÆ÷¶Ë¿ÚºÅ×Ö·û´®
-  *           pTimeOver£¬·şÎñÆ÷³¬Ê±Ê±¼ä×Ö·û´®£¬µ¥Î»£ºÃë
-  * ·µ »Ø Öµ: 1£¬²Ù×÷³É¹¦
-  *           0£¬²Ù×÷Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—å¼€å¯æˆ–å…³é—­æœåŠ¡å™¨æ¨¡å¼
+  * è¾“å…¥å‚æ•°: enumModeï¼Œå¼€å¯/å…³é—­
+  *           pPortNumï¼ŒæœåŠ¡å™¨ç«¯å£å·å­—ç¬¦ä¸²
+  *           pTimeOverï¼ŒæœåŠ¡å™¨è¶…æ—¶æ—¶é—´å­—ç¬¦ä¸²ï¼Œå•ä½ï¼šç§’
+  * è¿” å› å€¼: 1ï¼Œæ“ä½œæˆåŠŸ
+  *           0ï¼Œæ“ä½œå¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_StartOrShutServer ( FunctionalState enumMode, char * pPortNum, char * pTimeOver )
 {
@@ -268,13 +269,13 @@ bool ESP8266_StartOrShutServer ( FunctionalState enumMode, char * pPortNum, char
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: »ñÈ¡ESP8266 µÄÁ¬½Ó×´Ì¬£¬½ÏÊÊºÏµ¥¶Ë¿ÚÊ±Ê¹ÓÃ
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: 2£¬»ñµÃip
-  *           3£¬½¨Á¢Á¬½Ó
-  *           4£¬Ê§È¥Á¬½Ó
-  *           0£¬»ñÈ¡×´Ì¬Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: è·å–ESP8266 çš„è¿æ¥çŠ¶æ€ï¼Œè¾ƒé€‚åˆå•ç«¯å£æ—¶ä½¿ç”¨
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: 2ï¼Œè·å¾—ip
+  *           3ï¼Œå»ºç«‹è¿æ¥
+  *           4ï¼Œå¤±å»è¿æ¥
+  *           0ï¼Œè·å–çŠ¶æ€å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 uint8_t ESP8266_Get_LinkStatus ( void )
 {
@@ -293,10 +294,10 @@ uint8_t ESP8266_Get_LinkStatus ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: »ñÈ¡ESP8266 µÄ¶Ë¿Ú£¨Id£©Á¬½Ó×´Ì¬£¬½ÏÊÊºÏ¶à¶Ë¿ÚÊ±Ê¹ÓÃ
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: ¶Ë¿Ú£¨Id£©µÄÁ¬½Ó×´Ì¬£¬µÍ5Î»ÎªÓĞĞ§Î»£¬·Ö±ğ¶ÔÓ¦Id5~0£¬Ä³Î»ÈôÖÃ1±í¸ÃId½¨Á¢ÁËÁ¬½Ó£¬Èô±»Çå0±í¸ÃIdÎ´½¨Á¢Á¬½Ó
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: è·å–ESP8266 çš„ç«¯å£ï¼ˆIdï¼‰è¿æ¥çŠ¶æ€ï¼Œè¾ƒé€‚åˆå¤šç«¯å£æ—¶ä½¿ç”¨
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: ç«¯å£ï¼ˆIdï¼‰çš„è¿æ¥çŠ¶æ€ï¼Œä½5ä½ä¸ºæœ‰æ•ˆä½ï¼Œåˆ†åˆ«å¯¹åº”Id5~0ï¼ŒæŸä½è‹¥ç½®1è¡¨è¯¥Idå»ºç«‹äº†è¿æ¥ï¼Œè‹¥è¢«æ¸…0è¡¨è¯¥Idæœªå»ºç«‹è¿æ¥
+  * è¯´    æ˜ï¼šæ— 
   */
 uint8_t ESP8266_Get_IdLinkStatus ( void )
 {
@@ -334,12 +335,12 @@ uint8_t ESP8266_Get_IdLinkStatus ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: »ñÈ¡ESP8266 µÄ AP IP
-  * ÊäÈë²ÎÊı: pApIp£¬´æ·Å AP IP µÄÊı×éµÄÊ×µØÖ·
-  *           ucArrayLength£¬´æ·Å AP IP µÄÊı×éµÄ³¤¶È
-  * ·µ »Ø Öµ: 1£¬»ñÈ¡³É¹¦
-  *           0£¬»ñÈ¡Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: è·å–ESP8266 çš„ AP IP
+  * è¾“å…¥å‚æ•°: pApIpï¼Œå­˜æ”¾ AP IP çš„æ•°ç»„çš„é¦–åœ°å€
+  *           ucArrayLengthï¼Œå­˜æ”¾ AP IP çš„æ•°ç»„çš„é•¿åº¦
+  * è¿” å› å€¼: 1ï¼Œè·å–æˆåŠŸ
+  *           0ï¼Œè·å–å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 uint8_t ESP8266_Inquire_ApIp ( char * pApIp, uint8_t ucArrayLength )
 {
@@ -372,12 +373,12 @@ uint8_t ESP8266_Inquire_ApIp ( char * pApIp, uint8_t ucArrayLength )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: »ñÈ¡ESP8266 µÄ STA IP
-  * ÊäÈë²ÎÊı: pStaIp£¬´æ·Å STA IP µÄÊı×éµÄÊ×µØÖ·
-  *           ucArrayLength£¬´æ·Å STA IP µÄÊı×éµÄ³¤¶È
-  * ·µ »Ø Öµ: 1£¬»ñÈ¡³É¹¦
-  *           0£¬»ñÈ¡Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: è·å–ESP8266 çš„ STA IP
+  * è¾“å…¥å‚æ•°: pStaIpï¼Œå­˜æ”¾ STA IP çš„æ•°ç»„çš„é¦–åœ°å€
+  *           ucArrayLengthï¼Œå­˜æ”¾ STA IP çš„æ•°ç»„çš„é•¿åº¦
+  * è¿” å› å€¼: 1ï¼Œè·å–æˆåŠŸ
+  *           0ï¼Œè·å–å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 uint8_t ESP8266_Inquire_StaIp ( char * pStaIp, uint8_t ucArrayLength )
 {
@@ -407,12 +408,12 @@ uint8_t ESP8266_Inquire_StaIp ( char * pStaIp, uint8_t ucArrayLength )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: »ñÈ¡ESP8266 µÄ AP MAC
-  * ÊäÈë²ÎÊı: pApMac£¬´æ·Å AP MAC µÄÊı×éµÄÊ×µØÖ·
-  *           ucArrayLength£¬´æ·Å AP MAC µÄÊı×éµÄ³¤¶È
-  * ·µ »Ø Öµ: 1£¬»ñÈ¡³É¹¦
-  *           0£¬»ñÈ¡Ê§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: è·å–ESP8266 çš„ AP MAC
+  * è¾“å…¥å‚æ•°: pApMacï¼Œå­˜æ”¾ AP MAC çš„æ•°ç»„çš„é¦–åœ°å€
+  *           ucArrayLengthï¼Œå­˜æ”¾ AP MAC çš„æ•°ç»„çš„é•¿åº¦
+  * è¿” å› å€¼: 1ï¼Œè·å–æˆåŠŸ
+  *           0ï¼Œè·å–å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 uint8_t ESP8266_Inquire_ApMac( char * pApMac, uint8_t ucArrayLength )
 {
@@ -446,11 +447,11 @@ uint8_t ESP8266_Inquire_ApMac( char * pApMac, uint8_t ucArrayLength )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ÅäÖÃESP8266Ä£¿é½øÈëÍ¸´«·¢ËÍ
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: 1£¬ÅäÖÃ³É¹¦
-  *           0£¬ÅäÖÃÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: é…ç½®ESP8266æ¨¡å—è¿›å…¥é€ä¼ å‘é€
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: 1ï¼Œé…ç½®æˆåŠŸ
+  *           0ï¼Œé…ç½®å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_UnvarnishSend ( void )
 {
@@ -462,10 +463,10 @@ bool ESP8266_UnvarnishSend ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ÅäÖÃESP8266Ä£¿éÍË³öÍ¸´«Ä£Ê½
-  * ÊäÈë²ÎÊı: ÎŞ
-  * ·µ »Ø Öµ: ÎŞ
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: é…ç½®ESP8266æ¨¡å—é€€å‡ºé€ä¼ æ¨¡å¼
+  * è¾“å…¥å‚æ•°: æ— 
+  * è¿” å› å€¼: æ— 
+  * è¯´    æ˜ï¼šæ— 
   */
 void ESP8266_ExitUnvarnishSend ( void )
 {
@@ -475,14 +476,14 @@ void ESP8266_ExitUnvarnishSend ( void )
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿é·¢ËÍ×Ö·û´®
-  * ÊäÈë²ÎÊı: enumEnUnvarnishTx£¬ÉùÃ÷ÊÇ·ñÒÑÊ¹ÄÜÁËÍ¸´«Ä£Ê½
-  *           pStr£¬Òª·¢ËÍµÄ×Ö·û´®
-  *           ucId£¬ÄÄ¸öID·¢ËÍµÄ×Ö·û´®
-  *           ulStrLength£¬Òª·¢ËÍµÄ×Ö·û´®µÄ×Ö½ÚÊı
-  * ·µ »Ø Öµ: 1£¬·¢ËÍ³É¹¦
-  *           0£¬·¢ËÍÊ§°Ü
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—å‘é€å­—ç¬¦ä¸²
+  * è¾“å…¥å‚æ•°: enumEnUnvarnishTxï¼Œå£°æ˜æ˜¯å¦å·²ä½¿èƒ½äº†é€ä¼ æ¨¡å¼
+  *           pStrï¼Œè¦å‘é€çš„å­—ç¬¦ä¸²
+  *           ucIdï¼Œå“ªä¸ªIDå‘é€çš„å­—ç¬¦ä¸²
+  *           ulStrLengthï¼Œè¦å‘é€çš„å­—ç¬¦ä¸²çš„å­—èŠ‚æ•°
+  * è¿” å› å€¼: 1ï¼Œå‘é€æˆåŠŸ
+  *           0ï¼Œå‘é€å¤±è´¥
+  * è¯´    æ˜ï¼šæ— 
   */
 bool ESP8266_SendString ( FunctionalState enumEnUnvarnishTx, char * pStr, uint32_t ulStrLength, ENUM_ID_NO_TypeDef ucId )
 {
@@ -516,10 +517,10 @@ bool ESP8266_SendString ( FunctionalState enumEnUnvarnishTx, char * pStr, uint32
 }
 
 /**
-  * º¯Êı¹¦ÄÜ: ESP8266Ä£¿é½ÓÊÕ×Ö·û´®
-  * ÊäÈë²ÎÊı: enumEnUnvarnishTx£¬ÉùÃ÷ÊÇ·ñÒÑÊ¹ÄÜÁËÍ¸´«Ä£Ê½
-  * ·µ »Ø Öµ: ½ÓÊÕµ½µÄ×Ö·û´®Ê×µØÖ·
-  * Ëµ    Ã÷£ºÎŞ
+  * å‡½æ•°åŠŸèƒ½: ESP8266æ¨¡å—æ¥æ”¶å­—ç¬¦ä¸²
+  * è¾“å…¥å‚æ•°: enumEnUnvarnishTxï¼Œå£°æ˜æ˜¯å¦å·²ä½¿èƒ½äº†é€ä¼ æ¨¡å¼
+  * è¿” å› å€¼: æ¥æ”¶åˆ°çš„å­—ç¬¦ä¸²é¦–åœ°å€
+  * è¯´    æ˜ï¼šæ— 
   */
 char * ESP8266_ReceiveString ( FunctionalState enumEnUnvarnishTx )
 {
@@ -552,10 +553,13 @@ uint8_t InitESP8266(void)
   if(ESP8266_AT_Test())
   {
     printf("AT test OK\n");
+
   }
   else
 	{
-		ret=1;
+	
+		ret=1;	
+		
     return ret;
 	}
   if(ret<2)
@@ -565,6 +569,7 @@ uint8_t InitESP8266(void)
 				if(ESP8266_Net_Mode_Choose(STA_AP))
 				{
 					printf("ESP8266_Net_Mode_Choose OK\n");
+	
 				}
 				
 				if (ESP8266_Inquire_ApMac(Esp8266IPAddress, 30))
@@ -575,6 +580,7 @@ uint8_t InitESP8266(void)
 				else
 					{
 						ret=1;
+
 						return ret;
 					}
 					
@@ -588,6 +594,7 @@ uint8_t InitESP8266(void)
 			if (++cnt > 1)
 			{
 				ret=2;
+				
 				return ret;
 			}
 	}
@@ -601,10 +608,13 @@ uint8_t InitESP8266(void)
 //	 ESP8266_StartOrShutServer(ENABLE,"333","50");
   
   if (ESP8266_Inquire_StaIp(Esp8266IPAddress, 30))
-    printf("ESP8266 IP Address:%s\n", Esp8266IPAddress);
+    {
+		printf("ESP8266 IP Address:%s\n", Esp8266IPAddress);
+	}
 	else
 	{
 		ret=3;
+	
 		return ret;
 	}
  }
@@ -636,7 +646,7 @@ uint8_t InitESP8266(void)
 			ret=5;
       return ret;
 		}
-	printf("ÅäÖÃ ESP8266 Íê±Ï\n");
+	printf("é…ç½® ESP8266 å®Œæ¯•\n");
   return 0;
 }
 
@@ -672,7 +682,7 @@ if(ret<5)
 			ret=5;
       return ret;
 		}
-			printf("ÅäÖÃ ESP8266 tcpÍê±Ï\n");
+			printf("é…ç½® ESP8266 tcpå®Œæ¯•\n");
   return 0;
 
 }

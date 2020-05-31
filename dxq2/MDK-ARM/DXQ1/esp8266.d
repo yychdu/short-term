@@ -34,3 +34,4 @@ dxq1\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\stdbool.h
 dxq1\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\string.h
 dxq1\esp8266.o: D:\MDK5\ARM\ARMCC\Bin\..\include\stdarg.h
 dxq1\esp8266.o: ../Inc/main.h
+dxq1\esp8266.o: ..\Drivers\oled\GUI.h

@@ -95,6 +95,7 @@ unsigned char key_up=1;     //按键松开标志
 uint8_t g_key_cur=0;
 uint8_t ledgo=1;
   int led_type=0;
+   int tick=0;
  int mpuok=0;
  uint8_t num=0;
   uint8_t num1=5;
@@ -102,6 +103,7 @@ uint8_t ledgo=1;
  uint8_t pwm_flag=0;
  uint8_t show_mpu=0;
 uint8_t test_stat=0;
+uint8_t wifi_flag=0;
 uint8_t rx1_buff[MAX_RECV_LEN] = {0};
 uint8_t rx_line[MAX_RECV_LEN]={0};
 uint8_t * pBuf = rx1_buff; // 当前接收字节存放位置指针
@@ -167,19 +169,36 @@ int check_5m(void)
 
 int check_pwm(void)
 {
-  if(rx_line[7]>='0' &&rx_line[7]<='9'){
-      if('5'+'M'+rx_line[2]+rx_line[3]+rx_line[4]==(16*16*(rx_line[5]-'0')+16*(rx_line[6]-'0')+rx_line[7]-'0'))
-        return 1;
-        return 0;
-  }
-   else{
-      if('5'+'M'+rx_line[2]+rx_line[3]+rx_line[4]==(16*16*(rx_line[5]-'0')+16*(rx_line[6]-'0')+rx_line[7]-'A'+10))
-        return 1;
-        return 0;
-  }
+  char TAB[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+  uint32_t sum=0;
+          uint8_t i;
+         
+          for(i=0;i<5;++i)
+          {
+              sum+=rx_line[i];
+          }
+          if(rx_line[5]==TAB[(sum&0xff)>>4]&&rx_line[6]==TAB[(sum&0x0f)])
+          return 1;
+          return 0;
 
 }
-
+void addchecksum(char *str )
+{
+   const char TAB[16]={'0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'};
+         uint32_t sum=0;
+          uint8_t i;
+         int  len=strlen(str);
+          for(i=0;i<len;++i)
+          {
+            if(str[i]!='\n'&&str[i]!=0)
+              sum+=str[i];
+            else break;
+          }
+          str[len]=TAB[(sum&0xff)>>4];
+          str[len+1]=TAB[(sum&0x0f)];
+          str[len+2]='\n';
+          str[len+3]='\0';
+}
 
 
 int fputc(int ch, FILE *f)
@@ -352,6 +371,23 @@ void ShowTestGUI(void)
         GUI_DispStringAt("○",70,40);
       }
       GUI_SetFont(&GUI_Font8_ASCII);
+      	sprintf(buf, "5MBD%c%c%c%c%c%c%c%c", 
+									(D1) ? '1' : '0',
+									(D2) ? '1' : '0',
+									(D3) ? '1' : '0',
+									(D4) ? '1' : '0',
+									(!K1) ? 'D' : 'U',
+									(!K2) ? 'D' : 'U',
+									(!K3) ? 'D' : 'U',
+									(!K4) ? 'D' : 'U');
+    addchecksum(buf);
+    
+    if(HAL_GetTick()>=tick+500)
+    {
+      tick=HAL_GetTick();
+       printf("%s",buf);
+    }
+
   }
   else 
   {
@@ -409,7 +445,7 @@ void ShowMPUGUI(void)
   if(mpuok)
   {
     ;
-    char buf[30];
+    char buf[80];
     switch(show_mpu)
     {
       case 0:
@@ -430,7 +466,13 @@ void ShowMPUGUI(void)
     GUI_DispStringAt(buf,4,32);
      sprintf(buf,"横滚角：%.1f",fAZ);
     GUI_DispStringAt(buf,4,48);
-        
+        sprintf(buf,"5MRD%6.1f%6.1f%6.1f%6.1f",adval*3.3/4095,fAX,fAY,fAZ);
+        addchecksum(buf);
+         if(HAL_GetTick()>=tick+500)
+          {
+            tick=HAL_GetTick();
+            printf("%s",buf);
+          }
       break;
       case 2:
       {
@@ -508,24 +550,45 @@ void ShowPWMGUI(void)
 		GUI_DispStringAt("K3:调节亮度",16,48);
   GUI_Update();
 }
-void ShowWiFiGUI(void)
+void  ShowWiFiGUI(void)
 {
-  char buf[30];
-  GUI_Clear();
-  GUI_DispStringHCenterAt("WIFI通信",64,0);
+   
+  if(wifi_flag==0){
+    int m=ESP8266_AT_Test();
+      if(m==0)
+    {
+      GUI_Clear();
+      GUI_DispStringHCenterAt("WIFI ERR",64,0);
+      GUI_Update();
+      wifi_flag=0;
+    }
+    else 
+    wifi_flag=1;
+   return;
+  }
   
-  GUI_SetFont(&GUI_Font8_ASCII);
-GUI_DispStringAt("SSID: ESP8266_bd6a",0,16);
-sprintf(buf,"ip:%d.%d.%d.%d",User_ESP8266_TcpServer_IP[0],User_ESP8266_TcpServer_IP[1],User_ESP8266_TcpServer_IP[2],User_ESP8266_TcpServer_IP[3]);
-    GUI_DispStringAt(buf,0,24);
-    sprintf(buf,"port:%d%d%d%d",User_ESP8266_TcpServer_Port[0]-'0',User_ESP8266_TcpServer_Port[1]-'0',User_ESP8266_TcpServer_Port[2]-'0',User_ESP8266_TcpServer_Port[3]-'0');
-    GUI_DispStringAt(buf,0,32);
- 	GUI_DispStringAt("K1  :CONNECT TCP SERVER",0,40);
-		GUI_DispStringAt("K2  :SEND ARRAY",0,48);
-		GUI_DispStringAt("K3:  Unvarnishsend",0,56);
-    	
-     GUI_SetFont(&GUI_FontHZ_SimSun_16);
-  GUI_Update();
+  else
+  {
+    wifi_flag=1;
+        char buf[30];
+      GUI_Clear();
+      GUI_DispStringHCenterAt("WIFI通信",64,0);
+      
+      GUI_SetFont(&GUI_Font8_ASCII);
+    GUI_DispStringAt("SSID: ESP8266_bd6a",0,16);
+    sprintf(buf,"ip:%d.%d.%d.%d",User_ESP8266_TcpServer_IP[0],User_ESP8266_TcpServer_IP[1],User_ESP8266_TcpServer_IP[2],User_ESP8266_TcpServer_IP[3]);
+        GUI_DispStringAt(buf,0,24);
+        sprintf(buf,"port:%d%d%d%d",User_ESP8266_TcpServer_Port[0]-'0',User_ESP8266_TcpServer_Port[1]-'0',User_ESP8266_TcpServer_Port[2]-'0',User_ESP8266_TcpServer_Port[3]-'0');
+        GUI_DispStringAt(buf,0,32);
+      GUI_DispStringAt("K1  :CONNECT TCP SERVER",0,40);
+        GUI_DispStringAt("K2  :SEND ARRAY",0,48);
+        GUI_DispStringAt("K3:  Unvarnishsend",0,56);
+          
+        GUI_SetFont(&GUI_FontHZ_SimSun_16);
+      GUI_Update();
+
+  }
+  return;
 }
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) 
@@ -1334,11 +1397,12 @@ void StartTaskKeyScan(void const * argument)
           {
               sum+=str[i];
           }
-          str[len]=TAB[sum>>4];
-          str[len+1]='\n';
-          str[len+2]='\0';
+          str[len]=TAB[(sum&0xff)>>4];
+          str[len+1]=TAB[(sum&0x0f)];
+          str[len+2]='\n';
+          str[len+3]='\0';
           HAL_UART_Transmit_DMA(&huart2,(uint8_t*)str,strlen(str));
-          printf("%s\n",str);
+          printf("%s",str);
         }
         if(g_key_cur==K3_PRES&&K1==1&&K2==1&&K4==1)
         {
