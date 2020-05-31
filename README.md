@@ -5,7 +5,7 @@
 Gizwitsdxq  
 ###
 单片机esp8266连接机智云平台 实现LED控制 ADC读取电压 读取MPU6050姿态角 不提供详细用法 详情请右转机智云官网
-
+![1](https://github.com/yychdu/short-term/blob/master/Screenshot_2020-05-31-20-17-10-797_com.tencent.mo.jpg)
 ##
 dxq2 绝大多数功能 （设置ip，端口，上位机报警未做 其他功能均有）
 ###
@@ -19,10 +19,14 @@ dxq2 绝大多数功能 （设置ip，端口，上位机报警未做 其他功�
 
   五 功能4为WiFi通信测试界面，进入该界面后检测WiFi模块是否正常 ，如正常则配置WiFi模块为STA+AP工作模式，OLED屏上显示AP的SSID 名称，WiFi模块异常时OLED屏显示错误信息。配置完成后，手机或笔 记本连接WiFi模块，K1按键设置模块连接手机或笔记本上的TCP服务 器，并进入透传模式，屏幕显示接收到的最后一行字符串。K2按键向 服务器发送一个字符串、K3按键退出透传模式。（10分） 附加要求：不更改短按键功能，通过长按键和组合键检测，实现连接服务器IP 地址和端口可设置功能。（10分）
   六 设计PC端上位机软件，能接收单片机串口上传数据，并将数据帧 中的有效数据提取出来显示在程序窗口中。显示内容包括：4个LED灯 状态、4个按键状态、AD采样数据或采样电压值、陀螺仪6轴原始数据 及解算姿态角度，通信协议参考最后串口协议。（20分，必做） 附加要求：除了接收串口数据，还能接收TCP客户端上传数据。（10分） 上位机能根据AD值和陀螺仪姿态角控制OLED灯实现不同的报警效果。（10分）
-  
+  ![2](https://github.com/yychdu/short-term/blob/master/IMG_20200531_201802.jpg)
+  ![3](https://github.com/yychdu/short-term/blob/master/IMG_20200531_201811.jpg)
+  ![4](https://github.com/yychdu/short-term/blob/master/IMG_20200531_201817.jpg)
+  ![5](https://github.com/yychdu/short-term/blob/master/IMG_20200531_201826.jpg)
+  ![6](https://github.com/yychdu/short-term/blob/master/IMG_20200531_201832.jpg)
   ##
   QtNet
   ###
   上位机QT实现串口、tcp server 、tcp client设计
-  
+  ![7](https://github.com/yychdu/short-term/blob/master/QQ%E5%9B%BE%E7%89%8720200531202255.png)
   
